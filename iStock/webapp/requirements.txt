@@ -1,0 +1,6 @@
+Flask
+yfinance
+numpy
+pandas
+scikit-learn
+selenium
