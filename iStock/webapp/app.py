@@ -37,35 +37,10 @@ driver.quit()
 
 app = Flask(__name__)
 
-def get_ticker_data():
-    # List of popular stocks to display
-    symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'V', 'WMT']
-    ticker_data = []
-    
-    for symbol in symbols:
-        try:
-            stock = yf.Ticker(symbol)
-            info = stock.info
-            current_price = info.get('regularMarketPrice', 0)
-            previous_close = info.get('regularMarketPreviousClose', 0)
-            change_percent = ((current_price - previous_close) / previous_close) * 100
-            
-            ticker_data.append({
-                'symbol': symbol,
-                'price': round(current_price, 2),
-                'change': round(change_percent, 2)
-            })
-        except Exception as e:
-            print(f"Error fetching data for {symbol}: {e}")
-            continue
-    
-    return ticker_data
-
 @app.route('/')
 def index():
     # Rendering the index template with current price and change
-    ticker_data = get_ticker_data()
-    return render_template('index.html', price_close=dprice, change_price=dchange, ticker_data=ticker_data)
+    return render_template('index.html', price_close=dprice, change_price=dchange)
 
 @app.route('/results', methods=['POST'])
 def results():
@@ -74,9 +49,6 @@ def results():
     start_year = request.form['start_year']
     end_year = request.form['end_year']
     future_date = request.form['future_date']
-    
-    # Get ticker data for the marquee
-    ticker_data = get_ticker_data()
     
     # Construct date range from the form inputs
     start_date = f"{start_year}-01-01"
@@ -88,7 +60,7 @@ def results():
         if stock_data.empty:
             raise ValueError(f"No data found for {company_name}. Check the ticker.")
     except Exception as e:
-        return render_template('results.html', result={"error": str(e)}, ticker_data=ticker_data)
+        return render_template('results.html', result={"error": str(e)})
     
     # Prepare stock data features
     stock_data.dropna(inplace=True)
@@ -113,7 +85,7 @@ def results():
 
     # Predict future stock price for the specified date
     result = predict_stock_movement(stock_data, model, future_date, features, company_name)
-    return render_template('results.html', result=result, ticker_data=ticker_data)
+    return render_template('results.html', result=result)
 
 def predict_stock_movement(stock_data, model, input_date, features, company_name):
     input_datetime = datetime.strptime(input_date, "%d-%m-%Y")
@@ -146,5 +118,5 @@ def predict_stock_movement(stock_data, model, input_date, features, company_name
     except Exception as e:
         return {"error": str(e)}
 
-if __name__ == '__main__':
+if __name__ == '___main__':
     app.run(debug=True)
